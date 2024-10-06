@@ -22,39 +22,28 @@ class _SignuppageState extends State<Signuppage> {
 
   @override
   void initState() {
-   if (mounted) {
-      context.read<AuthProvider>().addListener(
-        () {
-          final user = context.read<AuthProvider>().user;
-
-          if (user != null) {
-            user.fold(
-              (l) {
-                context.showErrorDialog('Unable to login');
-              },
-              (r) {
-                context.go(HomePage.homePageRoute);
-              },
-            );
-          }
-        },
-      );
-    }
     super.initState();
   }
 
   @override
   void dispose() {
-
+    _name.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final loading = context.watch<AuthProvider>().isLoading;
     final user = context.watch<AuthProvider>().user;
+
     if (user != null) {
-      context.go(HomePage.homePageRoute);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go(HomePage.homePageRoute);
+      });
     }
+
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 24,
@@ -89,7 +78,7 @@ class _SignuppageState extends State<Signuppage> {
                   TextField(
                     controller: _password,
                     decoration: const InputDecoration(
-                      hintText: "password",
+                      hintText: "Password",
                     ),
                     obscureText: true,
                   )
@@ -102,45 +91,48 @@ class _SignuppageState extends State<Signuppage> {
             child: Column(
               children: [
                 ElevatedButton(
-                    onPressed: loading
-                        ? null
-                        : () {
-                            context.read<AuthProvider>().signup(
-                                name: _name.text,
-                                email: _email.text,
-                                password: _password.text);
-                          },
-                    child: loading
-                        ? const CircularProgressIndicator.adaptive()
-                        : Text(
-                            "Signup",
-                            style: context.textTheme.bodyMedium?.copyWith(
-                                color: context.colorSchema.secondary),
-                          )),
+                  onPressed: loading
+                      ? null
+                      : () {
+                          context.read<AuthProvider>().signup(
+                              name: _name.text,
+                              email: _email.text,
+                              password: _password.text);
+                        },
+                  child: loading
+                      ? const CircularProgressIndicator.adaptive()
+                      : Text(
+                          "Signup",
+                          style: context.textTheme.bodyMedium?.copyWith(
+                              color: context.colorSchema.secondary),
+                        ),
+                ),
                 const Gap(8),
                 InkWell(
                   borderRadius: BorderRadius.circular(6),
-                  radius: 15,
                   onTap: () {
                     context.go(LoginPage.loginRoute);
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: RichText(
-                        text: TextSpan(
-                            text: "Already have an account? ",
-                            style: context.textTheme.labelMedium,
-                            children: [
+                      text: TextSpan(
+                        text: "Already have an account? ",
+                        style: context.textTheme.labelMedium,
+                        children: [
                           TextSpan(
-                              text: "Login",
-                              style: context.textTheme.bodyMedium?.copyWith(
-                                  color: context.colorSchema.primary))
-                        ])),
+                            text: "Login",
+                            style: context.textTheme.bodyMedium?.copyWith(
+                                color: context.colorSchema.primary),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

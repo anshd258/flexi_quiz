@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:flexi_quiz/core/extension/buildcontext.dart';
 import 'package:flexi_quiz/presentation/provider/authprovider/provider.dart';
-
 import 'package:flexi_quiz/presentation/views/Signuppage/page.dart';
 import 'package:flexi_quiz/presentation/views/homepage/page.dart';
 import 'package:flutter/material.dart';
@@ -19,43 +17,27 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool canPop = false;
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   late StreamSubscription _stream;
+
   @override
   void initState() {
+    super.initState();
     _stream = context.read<AuthProvider>().streamAuth.listen(
       (event) {
-        if (event != null) {
+        if (event != null && mounted) {
           context.go(HomePage.homePageRoute);
         }
       },
     );
-    if (mounted) {
-      context.read<AuthProvider>().addListener(
-        () {
-          final user = context.read<AuthProvider>().user;
-
-          if (user != null) {
-            user.fold(
-              (l) {
-                context.showErrorDialog('Unable to login');
-              },
-              (r) {
-                context.go(HomePage.homePageRoute);
-              },
-            );
-          }
-        },
-      );
-    }
-    super.initState();
   }
 
   @override
   void dispose() {
     _stream.cancel();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
@@ -63,13 +45,9 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final loading = context.watch<AuthProvider>().isLoading;
 
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) {
-          return;
-        }
-        await _showExitConfirmationDialog(context);
+    return WillPopScope(
+      onWillPop: () async {
+        return await _showExitConfirmationDialog(context);
       },
       child: Scaffold(
         appBar: AppBar(
@@ -97,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Gap(8),
                     TextField(
                       controller: _password,
-                      decoration: const InputDecoration(hintText: "password"),
+                      decoration: const InputDecoration(hintText: "Password"),
                       obscureText: true,
                     )
                   ],
@@ -109,51 +87,54 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 children: [
                   ElevatedButton(
-                      onPressed: loading
-                          ? null
-                          : () {
-                              context.read<AuthProvider>().login(
-                                  email: _email.text, password: _password.text);
-                            },
-                      child: loading
-                          ? const CircularProgressIndicator.adaptive()
-                          : Text(
-                              "Login",
-                              style: context.textTheme.bodyMedium?.copyWith(
-                                  color: context.colorSchema.secondary),
-                            )),
+                    onPressed: loading
+                        ? null
+                        : () {
+                            context.read<AuthProvider>().login(
+                                email: _email.text, password: _password.text);
+                          },
+                    child: loading
+                        ? const CircularProgressIndicator.adaptive()
+                        : Text(
+                            "Login",
+                            style: context.textTheme.bodyMedium
+                                ?.copyWith(color: context.colorSchema.secondary),
+                          ),
+                  ),
                   const Gap(8),
                   InkWell(
                     borderRadius: BorderRadius.circular(6),
-                    radius: 15,
                     onTap: () {
                       context.push(Signuppage.signupPageRoute);
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: RichText(
-                          text: TextSpan(
-                              text: "New here? ",
-                              style: context.textTheme.labelMedium,
-                              children: [
+                        text: TextSpan(
+                          text: "New here? ",
+                          style: context.textTheme.labelMedium,
+                          children: [
                             TextSpan(
-                                text: "Signup",
-                                style: context.textTheme.bodyMedium?.copyWith(
-                                    color: context.colorSchema.primary))
-                          ])),
+                              text: "Signup",
+                              style: context.textTheme.bodyMedium?.copyWith(
+                                  color: context.colorSchema.primary),
+                            )
+                          ],
+                        ),
+                      ),
                     ),
                   )
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  Future<Future> _showExitConfirmationDialog(BuildContext context) async {
-    return showDialog(
+  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -161,16 +142,17 @@ class _LoginPageState extends State<LoginPage> {
           content: const Text('Are you sure you want to exit?'),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), // Cancel
+              onPressed: () => Navigator.of(context).pop(false),
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true), // Confirm
+              onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Exit'),
             ),
           ],
         );
       },
     );
+    return result ?? false;
   }
 }
