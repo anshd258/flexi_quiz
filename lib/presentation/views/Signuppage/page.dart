@@ -19,6 +19,7 @@ class _SignuppageState extends State<Signuppage> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -44,6 +45,8 @@ class _SignuppageState extends State<Signuppage> {
       });
     }
 
+    // Function to validate password
+
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 24,
@@ -58,31 +61,50 @@ class _SignuppageState extends State<Signuppage> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextField(
-                    controller: _name,
-                    decoration: const InputDecoration(
-                      hintText: "Name",
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextFormField(
+                      controller: _name,
+                      decoration: const InputDecoration(hintText: "Name"),
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Name is required';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                  const Gap(8),
-                  TextField(
-                    controller: _email,
-                    decoration: const InputDecoration(
-                      hintText: "Email",
+                    const Gap(8),
+                    TextFormField(
+                        controller: _email,
+                        decoration: const InputDecoration(hintText: "Email"),
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Email is required';
+                          }
+                          // Basic email validation
+                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (!emailRegex.hasMatch(value)) {
+                            return 'Enter a valid email';
+                          }
+                          return null;
+                        }),
+                    const Gap(8),
+                    TextFormField(
+                      controller: _password,
+                      decoration: const InputDecoration(hintText: "Password"),
+                      obscureText: true,
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password is required';
+                        }
+                        return null;
+                      }, // Add validation
                     ),
-                  ),
-                  const Gap(8),
-                  TextField(
-                    controller: _password,
-                    decoration: const InputDecoration(
-                      hintText: "Password",
-                    ),
-                    obscureText: true,
-                  )
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -94,17 +116,21 @@ class _SignuppageState extends State<Signuppage> {
                   onPressed: loading
                       ? null
                       : () {
-                          context.read<AuthProvider>().signup(
+                        if (_formKey.currentState!.validate()) {
+                           context.read<AuthProvider>().signup(
                               name: _name.text,
                               email: _email.text,
                               password: _password.text);
+
+                        }
+                         
                         },
                   child: loading
                       ? const CircularProgressIndicator.adaptive()
                       : Text(
                           "Signup",
-                          style: context.textTheme.bodyMedium?.copyWith(
-                              color: context.colorSchema.secondary),
+                          style: context.textTheme.bodyMedium
+                              ?.copyWith(color: context.colorSchema.secondary),
                         ),
                 ),
                 const Gap(8),
@@ -122,8 +148,8 @@ class _SignuppageState extends State<Signuppage> {
                         children: [
                           TextSpan(
                             text: "Login",
-                            style: context.textTheme.bodyMedium?.copyWith(
-                                color: context.colorSchema.primary),
+                            style: context.textTheme.bodyMedium
+                                ?.copyWith(color: context.colorSchema.primary),
                           ),
                         ],
                       ),

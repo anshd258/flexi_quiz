@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   late StreamSubscription _stream;
-
+  final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
     super.initState();
@@ -63,22 +63,44 @@ class _LoginPageState extends State<LoginPage> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextField(
-                      controller: _email,
-                      decoration: const InputDecoration(
-                        hintText: "Email",
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextFormField(
+                        controller: _email,
+                        decoration: const InputDecoration(
+                          hintText: "Email",
+                        ),
+                        // Validator for email
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                              .hasMatch(value)) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                    const Gap(8),
-                    TextField(
-                      controller: _password,
-                      decoration: const InputDecoration(hintText: "Password"),
-                      obscureText: true,
-                    )
-                  ],
+                      const Gap(8),
+                      TextFormField(
+                        controller: _password,
+                        decoration: const InputDecoration(hintText: "Password"),
+                        obscureText: true,
+                        // Validator for password
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          } else if (value.length < 6) {
+                            return 'Password must be at least 6 characters long';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -90,15 +112,19 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: loading
                         ? null
                         : () {
+                           if (_formKey.currentState?.validate() ?? false) {
                             context.read<AuthProvider>().login(
                                 email: _email.text, password: _password.text);
+
+                           }
+                            
                           },
                     child: loading
                         ? const CircularProgressIndicator.adaptive()
                         : Text(
                             "Login",
-                            style: context.textTheme.bodyMedium
-                                ?.copyWith(color: context.colorSchema.secondary),
+                            style: context.textTheme.bodyMedium?.copyWith(
+                                color: context.colorSchema.secondary),
                           ),
                   ),
                   const Gap(8),
