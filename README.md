@@ -87,6 +87,7 @@ flutter run
 - **Network Layer**: The project uses `retrofit` and `dio` for making network requests with ease.
 - **Firebase Integration**: Authentication and Firestore are set up for handling user data and cloud storage.
 - **Custom Fonts**: Uses Google Fonts for custom typography.
+- **Transition Animatoins**: Page Transitoins animations for better user experience
 
 ## Development Workflow
 
@@ -99,30 +100,10 @@ flutter pub run build_runner build
 
 This will update the `freezed` and `g` files, ensuring that your data models and API services are up-to-date.
 
-### 2. Linting:
-The project uses Flutter lints for code quality. To check lint errors, run:
 
-```bash
-flutter analyze
-```
-
-### 3. Testing:
-Flutter's built-in testing framework is used. You can run the tests using:
-
-```bash
-flutter test
-```
 
 ## Additional Tools Used
 
-- **Talker**: For error and log handling, especially useful in debugging.
+- **Talker**: For error and log handling, especially useful in debugging an special ison is added to hoge page for logs.
 - **Cached Network Image**: For efficient image loading and caching.
 - **Firebase Remote Config**: For managing feature flags and dynamic configurations.
-
-## License
-
-This project is licensed under the MIT License.
-
----
-
-This `README.md` provides an overview of the project setup, development workflow, and usage of key packages like Firebase and `build_runner`. Let me know if you'd like to include any other sections or details!
